@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blueGrey)
               .copyWith(secondary: Colors.black),
         ),
-        home: RootPage(),
+        home: const RootPage(),
       ),
     );
   }
