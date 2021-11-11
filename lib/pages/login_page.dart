@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:cloud/models/auth.dart';
 import 'package:cloud/models/auth_provider.dart';
 
+class EmailFieldValidator {
+  static String? validate(String value) {
+    return value == "" ? "Email Required" : null;
+  }
+}
+
+class PasswordFieldValidator {
+  static String? validate(String value) {
+    return value == "" ? "Password Required" : null;
+  }
+}
+
 enum Formtype { login, register }
 
 class LoginPage extends StatefulWidget {
@@ -80,12 +92,12 @@ class _LoginPageState extends State<LoginPage> {
       return [
         TextFormField(
           decoration: const InputDecoration(labelText: "Email"),
-          validator: (value) => value == "" ? "Email Required" : null,
+          validator: (value) => EmailFieldValidator.validate(value!),
           onSaved: (value) => _email = value!,
         ),
         TextFormField(
           decoration: const InputDecoration(labelText: "Password"),
-          validator: (value) => value == "" ? "Password Required" : null,
+          validator: (value) => PasswordFieldValidator.validate(value!),
           onSaved: (value) => _password = value!,
           obscureText: true,
         ),
@@ -94,12 +106,12 @@ class _LoginPageState extends State<LoginPage> {
       return [
         TextFormField(
           decoration: const InputDecoration(labelText: "Email"),
-          validator: (value) => value == "" ? "Email Required" : null,
+          validator: (value) => EmailFieldValidator.validate(value!),
           onSaved: (value) => _email = value!,
         ),
         TextFormField(
           decoration: const InputDecoration(labelText: "Password"),
-          validator: (value) => value == "" ? "Password Required" : null,
+          validator: (value) => PasswordFieldValidator.validate(value!),
           onSaved: (value) => _password = value!,
           obscureText: true,
         ),
