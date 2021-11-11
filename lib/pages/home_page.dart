@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:cloud/models/firebase_api.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  UploadTask? task;
   void _signOut(BuildContext context) async {
     try {
       var auth = AuthProvider.of(context)!.auth;
@@ -30,14 +31,47 @@ class _HomePageState extends State<HomePage> {
       if (result != null) {
         Uint8List? fileBytes = result.files.first.bytes;
         String fileName = result.files.first.name;
-        await FirebaseStorage.instance
-            .ref("photos/$fileName")
-            .putData(fileBytes!);
+
+        uploadFile(fileBytes, fileName);
+
+        // if (task == null) return;
+
+        // final snapshot = await task!.whenComplete(() {});
+        // final urlDownloadLink = await snapshot.ref.getDownloadURL();
+        // print(urlDownloadLink);
       }
     } catch (e) {
       print(e);
     }
   }
+
+  Future uploadFile(Uint8List? photo, String name) async {
+    if (photo == null) return;
+    final destination = 'photos/$name';
+
+    task = FirebaseAPI.uploadBytes(destination, photo);
+    setState(() {});
+
+    if (task == null) return;
+
+    final snapshot = await task!.whenComplete(() => null);
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+    print(downloadUrl);
+  }
+
+  Widget buildUploadStatus(UploadTask task) => StreamBuilder<TaskSnapshot>(
+        stream: task.snapshotEvents,
+        builder: (context, snapsot) {
+          if (snapsot.hasData) {
+            final snap = snapsot.data!;
+            final progress = snap.bytesTransferred / snap.totalBytes;
+            final precentage = (progress * 100).toStringAsFixed(2);
+            return Text("$precentage %");
+          } else {
+            return Container();
+          }
+        },
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +79,13 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("Cloud Data"),
       ),
-      body: const Center(
-          child: Text(
-        "Welcome",
-        style: TextStyle(fontSize: 30),
-      )),
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            task != null ? buildUploadStatus(task!) : Container()
+          ],
+        ),
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -60,7 +96,6 @@ class _HomePageState extends State<HomePage> {
               leading: const Icon(Icons.upload_rounded),
               onTap: () {
                 selectFile();
-
                 Navigator.pop(context);
               },
             ),
