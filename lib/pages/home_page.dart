@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:cloud/models/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
+import 'package:cloud/pages/image_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -76,8 +77,19 @@ class _HomePageState extends State<HomePage> {
         },
       );
 
-  Widget buildGrid(BuildContext context, FirebaseFile file) =>
-      GridTile(child: Text(file.name));
+  Widget buildGrid(BuildContext context, FirebaseFile file) => GridTile(
+        child: GestureDetector(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              alignment: Alignment.center,
+              child: Image.network(file.url),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+            ),
+          ),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImagePage(file: file))),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -105,13 +117,13 @@ class _HomePageState extends State<HomePage> {
                   final files = snapshot.data;
 
                   return GridView.builder(
+                      itemCount: files!.length,
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: 200,
                               crossAxisSpacing: 20,
                               childAspectRatio: 3 / 2,
                               mainAxisSpacing: 20),
-                      itemCount: files!.length,
                       itemBuilder: (context, index) {
                         final file = files[index];
                         return buildGrid(context, file);
