@@ -15,6 +15,17 @@ class FirebaseAPI {
     }
   }
 
+  static Future<void> deleteImage(FirebaseFile file) async {
+    final ref = file.ref;
+    return ref.delete();
+  }
+
+  Future<List> getFileData(FullMetadata data) async {
+    final size = data.size;
+    final timeCreated = data.timeCreated;
+    return [size, timeCreated];
+  }
+
   static Future<List<FirebaseFile>> listAll(String path) async {
     final ref = FirebaseStorage.instance.ref(path);
     final result = await ref.listAll();
@@ -26,7 +37,15 @@ class FirebaseAPI {
         .map((index, url) {
           final ref = result.items[index];
           final name = ref.name;
-          final file = FirebaseFile(name: name, ref: ref, url: url);
+          final size = ref.getMetadata().then((value) => {value.size});
+          final timeCreated =
+              ref.getMetadata().then((value) => {value.timeCreated});
+          final file = FirebaseFile(
+              name: name,
+              ref: ref,
+              url: url,
+              createdTime: timeCreated,
+              size: size);
           return MapEntry(index, file);
         })
         .values

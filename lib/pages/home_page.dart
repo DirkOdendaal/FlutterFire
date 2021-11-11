@@ -18,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   late Future<List<FirebaseFile>> futureFiles;
   UploadTask? task;
 
+  @override
   void initState() {
     super.initState();
     futureFiles = FirebaseAPI.listAll('photos/');
@@ -57,10 +58,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
 
     if (task == null) return;
-
-    final snapshot = await task!.whenComplete(() => null);
-    final downloadUrl = await snapshot.ref.getDownloadURL();
-    print(downloadUrl);
   }
 
   Widget buildUploadStatus(UploadTask task) => StreamBuilder<TaskSnapshot>(
@@ -87,7 +84,8 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
             ),
           ),
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImagePage(file: file))),
+          onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => ImagePage(file: file))),
         ),
       );
 
