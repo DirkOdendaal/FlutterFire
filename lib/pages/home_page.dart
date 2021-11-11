@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:cloud/models/firebase_api.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud/models/firebase_file.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +14,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late Future<List<FirebaseFile>> futureFiles;
   UploadTask? task;
+
+  void initState() {
+    super.initState();
+    futureFiles = FirebaseAPI.listAll('photos/');
+  }
+
   void _signOut(BuildContext context) async {
     try {
       var auth = AuthProvider.of(context)!.auth;
@@ -26,19 +33,15 @@ class _HomePageState extends State<HomePage> {
 
   Future selectFile() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles();
+      //Check Into Uploading Multiple Files now.
+      FilePickerResult? result =
+          await FilePicker.platform.pickFiles(allowMultiple: true);
 
       if (result != null) {
         Uint8List? fileBytes = result.files.first.bytes;
         String fileName = result.files.first.name;
 
         uploadFile(fileBytes, fileName);
-
-        // if (task == null) return;
-
-        // final snapshot = await task!.whenComplete(() {});
-        // final urlDownloadLink = await snapshot.ref.getDownloadURL();
-        // print(urlDownloadLink);
       }
     } catch (e) {
       print(e);
@@ -65,27 +68,57 @@ class _HomePageState extends State<HomePage> {
           if (snapsot.hasData) {
             final snap = snapsot.data!;
             final progress = snap.bytesTransferred / snap.totalBytes;
-            final precentage = (progress * 100).toStringAsFixed(2);
-            return Text("$precentage %");
+            final percentage = (progress * 100).toStringAsFixed(2);
+            return Text("$percentage %");
           } else {
             return Container();
           }
         },
       );
 
+  Widget buildGrid(BuildContext context, FirebaseFile file) =>
+      GridTile(child: Text(file.name));
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Cloud Data"),
+        actions: <Widget>[
+          task != null ? buildUploadStatus(task!) : Container(),
+        ],
       ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            task != null ? buildUploadStatus(task!) : Container()
-          ],
-        ),
-      ),
+      body: FutureBuilder<List<FirebaseFile>>(
+          future: futureFiles,
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              default:
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text("Some Errors"),
+                  );
+                } else {
+                  final files = snapshot.data;
+
+                  return GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 200,
+                              crossAxisSpacing: 20,
+                              childAspectRatio: 3 / 2,
+                              mainAxisSpacing: 20),
+                      itemCount: files!.length,
+                      itemBuilder: (context, index) {
+                        final file = files[index];
+                        return buildGrid(context, file);
+                      });
+                }
+            }
+          }),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
