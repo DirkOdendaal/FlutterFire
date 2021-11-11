@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
+
 abstract class BaseAuth {
+  Stream<String> get onAuthStateChanged;
   Future<String> signInWithEmailAndPassword(String email, String password);
   Future<String> createUserWithEmailAndPassword(String email, String password);
   Future<String> currentUser();
@@ -10,6 +13,13 @@ abstract class BaseAuth {
 
 class Auth implements BaseAuth {
   final FirebaseAuth firebaseAuthIns = FirebaseAuth.instance;
+
+  @override
+  Stream<String> get onAuthStateChanged {
+    return firebaseAuthIns.authStateChanges().map((user) => user!.uid);
+  }
+
+  @override
   Future<String> signInWithEmailAndPassword(
       String email, String password) async {
     await firebaseAuthIns.signInWithEmailAndPassword(
@@ -19,6 +29,7 @@ class Auth implements BaseAuth {
     return uid;
   }
 
+  @override
   Future<String> createUserWithEmailAndPassword(
       String email, String password) async {
     await firebaseAuthIns.createUserWithEmailAndPassword(
@@ -28,6 +39,7 @@ class Auth implements BaseAuth {
     return uid;
   }
 
+  @override
   Future<String> currentUser() async {
     String finalUser = "";
     if (firebaseAuthIns.currentUser != null) {
@@ -37,6 +49,7 @@ class Auth implements BaseAuth {
     return finalUser;
   }
 
+  @override
   Future<void> signOut() async {
     return FirebaseAuth.instance.signOut();
   }

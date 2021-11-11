@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud/models/auth.dart';
 import 'package:cloud/models/auth_provider.dart';
 
 class EmailFieldValidator {
@@ -17,8 +16,8 @@ class PasswordFieldValidator {
 enum Formtype { login, register }
 
 class LoginPage extends StatefulWidget {
-  LoginPage({required this.onSignedIn});
-  final VoidCallback onSignedIn;
+  const LoginPage({Key? key}) : super(key: key);
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -46,8 +45,6 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           await auth!.createUserWithEmailAndPassword(_email, _password);
         }
-
-        widget.onSignedIn();
       } catch (e) {
         print('Error $e');
         // Handle errors here

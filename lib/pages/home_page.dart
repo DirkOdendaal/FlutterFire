@@ -1,19 +1,13 @@
-import 'dart:js';
-
 import 'package:flutter/material.dart';
-import 'package:cloud/models/auth.dart';
 import 'package:cloud/models/auth_provider.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({required this.onSignedOut});
-
-  final VoidCallback onSignedOut;
+  const HomePage({Key? key}) : super(key: key);
 
   void _signOut(BuildContext context) async {
     try {
       var auth = AuthProvider.of(context)!.auth;
       await auth!.signOut();
-      onSignedOut();
     } catch (e) {
       print(e);
     }
@@ -25,13 +19,11 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Cloud Data"),
       ),
-      body: Container(
-        child: const Center(
-            child: Text(
-          "Welcome",
-          style: TextStyle(fontSize: 30),
-        )),
-      ),
+      body: const Center(
+          child: Text(
+        "Welcome",
+        style: TextStyle(fontSize: 30),
+      )),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
