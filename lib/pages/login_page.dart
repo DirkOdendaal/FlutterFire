@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud/models/auth.dart';
+import 'package:cloud/models/auth_provider.dart';
 
 enum Formtype { login, register }
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
-
+  LoginPage({required this.onSignedIn});
+  final VoidCallback onSignedIn;
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -27,15 +28,17 @@ class _LoginPageState extends State<LoginPage> {
   void validateAndSubmit() async {
     if (validateAndSave()) {
       try {
+        var auth = AuthProvider.of(context)!.auth;
         if (_formType == Formtype.login) {
-          
+          await auth!.signInWithEmailAndPassword(_email, _password);
         } else {
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-              email: _email, password: _password);
+          await auth!.createUserWithEmailAndPassword(_email, _password);
         }
+
+        widget.onSignedIn();
       } catch (e) {
         print('Error $e');
-        // Hanle errors here
+        // Handle errors here
       }
     }
   }

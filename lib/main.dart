@@ -1,6 +1,8 @@
+import 'package:cloud/models/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud/pages/login_page.dart';
+import 'package:cloud/models/auth.dart';
+import 'package:cloud/pages/root_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,14 +16,17 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Cloud',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blueGrey)
-            .copyWith(secondary: Colors.black),
+    return AuthProvider(
+      auth: Auth(),
+      child: MaterialApp(
+        title: 'Cloud',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blueGrey)
+              .copyWith(secondary: Colors.black),
+        ),
+        home: RootPage(),
       ),
-      home: const LoginPage(),
     );
   }
 }
