@@ -1,4 +1,4 @@
-# cloud
+# Cloud
 
 A new Flutter project.
 
