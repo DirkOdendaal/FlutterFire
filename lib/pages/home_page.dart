@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'package:cloud/models/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/pages/image_page.dart';
+import 'package:cloud/widgets/database_read.dart';
+import 'package:cloud/widgets/database_write.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -74,18 +76,32 @@ class _HomePageState extends State<HomePage> {
         },
       );
 
-  Widget buildGrid(BuildContext context, FirebaseFile file) => GridTile(
-        child: GestureDetector(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              alignment: Alignment.center,
-              child: Image.network(file.url),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+  Widget buildGrid(BuildContext context, FirebaseFile file) => Draggable(
+        child: GridTile(
+          child: GestureDetector(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                alignment: Alignment.center,
+                child: Image.network(file.url),
+                decoration:
+                    BoxDecoration(borderRadius: BorderRadius.circular(5)),
+              ),
             ),
+            onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => ImagePage(file: file))),
           ),
-          onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => ImagePage(file: file))),
+        ),
+        feedback: Container(
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              Image.asset('assets/images/placeholder.png'),
+            ],
+          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+          width: 48,
+          height: 48,
         ),
       );
 
@@ -140,6 +156,26 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 selectFile();
                 Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text("Write Database"),
+              leading: const Icon(Icons.pending_actions),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const DatabaseWrite()));
+              },
+            ),
+            ListTile(
+              title: const Text("Read Database"),
+              leading: const Icon(Icons.reply_all_outlined),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const DatabaseRead()));
               },
             ),
             ListTile(
