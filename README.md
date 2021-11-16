@@ -9,8 +9,10 @@ Feel free to fork this repo. Rememeber to Copy your own firebase Config File fro
 Find the official docs on Flutter and Firebase here : 
 
 https://firebase.google.com/docs
+
 https://docs.flutter.dev/
 
 Also the docs on Using firebase and flutter together: 
+
 https://firebase.flutter.dev/docs/overview
 
