@@ -1,13 +1,8 @@
-# Cloud
+# FlutterFire
 
-A new Flutter project.
+This is a new Flutter and Firebase web Applications.
 
-## Getting Started
+I am in the process of teaching myself the proper workflow of flutter as well as Firebase and all its components.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+Feel free to For this repo. Rememeber to Copy your own firebase Config File from your own firebasae project to see the results of Storage and Database calls.
 
