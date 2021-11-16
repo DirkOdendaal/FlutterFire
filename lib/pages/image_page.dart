@@ -1,7 +1,7 @@
 import 'package:cloud/models/firebase_file.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cloud/models/firebase_api.dart';
+import 'package:cloud/classes/firebase_api.dart';
 
 class ImagePage extends StatelessWidget {
   final FirebaseFile file;

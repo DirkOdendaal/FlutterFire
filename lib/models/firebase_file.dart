@@ -4,10 +4,11 @@ class FirebaseFile {
   final Reference ref;
   final String name;
   final String url;
+  final String dateCreated;
 
-  const FirebaseFile({
-    required this.name,
-    required this.ref,
-    required this.url,
-  });
+  const FirebaseFile(
+      {required this.name,
+      required this.ref,
+      required this.url,
+      required this.dateCreated});
 }

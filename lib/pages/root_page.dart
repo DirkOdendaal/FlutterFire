@@ -1,4 +1,4 @@
-import 'package:cloud/models/auth_provider.dart';
+import 'package:cloud/classes/auth_provider.dart';
 import 'package:cloud/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud/pages/login_page.dart';

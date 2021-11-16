@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:typed_data';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud/models/firebase_file.dart';
+
+import 'auth.dart';
 
 class FirebaseAPI {
   static Future<List<String>> _getDownloadUrls(List<Reference> refs) =>
@@ -38,13 +42,30 @@ class FirebaseAPI {
           final ref = result.items[index];
           final name = ref.name;
           final file = FirebaseFile(
-            name: name,
-            ref: ref,
-            url: url,
-          );
+              name: name,
+              ref: ref,
+              url: url,
+              dateCreated: DateTime.now().toIso8601String());
           return MapEntry(index, file);
         })
         .values
         .toList();
+  }
+
+  static StreamSubscription setRecordValueChangedListener() {
+    String currentUser = Auth().userUIDret();
+
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+        .reference();
+
+    return database.child('users/$currentUser/photos').onValue.listen((event) {
+      final data = new Map<String, dynamic>.from(event.snapshot.value);
+      // final url = data['url'] as String;
+      // final name = data['imageName'] as String;
+      // final date = data['dateCreated'] as String;
+      print(event.snapshot.value);
+    });
   }
 }

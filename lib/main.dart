@@ -1,7 +1,7 @@
-import 'package:cloud/models/auth_provider.dart';
+import 'package:cloud/classes/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud/models/auth.dart';
+import 'package:cloud/classes/auth.dart';
 import 'package:cloud/pages/root_page.dart';
 
 Future<void> main() async {

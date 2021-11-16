@@ -1,12 +1,13 @@
+import 'dart:async';
 import 'dart:typed_data';
-import 'package:cloud/models/firebase_api.dart';
+import 'package:cloud/classes/auth.dart';
+import 'package:cloud/classes/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/pages/image_page.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud/models/auth_provider.dart';
+import 'package:cloud/classes/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -16,17 +17,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final database = FirebaseDatabase(
-          databaseURL:
-              "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
-      .reference();
-  late Future<List<FirebaseFile>> futureFiles;
+  late Future<List<FirebaseFile>> fileList; //This is for Realtime Database
+  late Future<List<FirebaseFile>> futureFiles; //This is for Storage
   UploadTask? task;
+  late String currentUser;
+  late StreamSubscription _currentUserCollectionStream;
 
   @override
   void initState() {
     super.initState();
+    setUserUID();
     futureFiles = FirebaseAPI.listAll('photos/');
+    _activateListeners();
+  }
+
+  @override
+  void deactivate() {
+    _currentUserCollectionStream.cancel();
+    super.deactivate();
+  }
+
+  Future<void> _activateListeners() async {
+    _currentUserCollectionStream = FirebaseAPI.setRecordValueChangedListener();
+  }
+
+  void setUserUID() {
+    currentUser = Auth().userUIDret();
   }
 
   void _signOut(BuildContext context) async {
@@ -57,9 +73,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future uploadFile(Uint8List? photo, String name) async {
-    var auth = AuthProvider.of(context)!.auth;
-    String currentUser = auth!.userUIDret();
-    final childNode = database.child('users/$currentUser/photos');
+    // final childNode = _database.child('users/$currentUser/photos');
 
     if (photo == null) return;
     final destination = 'photos/$name';
@@ -78,7 +92,9 @@ class _HomePageState extends State<HomePage> {
         'url': downloadUrl,
         'dateCreated': DateTime.now().toIso8601String()
       };
-      await childNode.push().set(photoRecord);
+
+      //move to api
+      // await childNode.push().set(photoRecord);
     } catch (e) {
       print(e); //Create alerts for these.
     }
