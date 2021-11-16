@@ -2,9 +2,8 @@ import 'dart:typed_data';
 import 'package:cloud/models/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/pages/image_page.dart';
-import 'package:cloud/widgets/database_read.dart';
-import 'package:cloud/widgets/database_write.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud/models/auth_provider.dart';
@@ -17,6 +16,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final database = FirebaseDatabase(
+          databaseURL:
+              "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+      .reference();
   late Future<List<FirebaseFile>> futureFiles;
   UploadTask? task;
 
@@ -43,7 +46,8 @@ class _HomePageState extends State<HomePage> {
 
       if (result != null) {
         Uint8List? fileBytes = result.files.first.bytes;
-        String fileName = result.files.first.name;
+        String fileName = result.files.first
+            .name; //Change File name selected to GUID to upload and keep file names in storage unique
 
         uploadFile(fileBytes, fileName);
       }
@@ -53,6 +57,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future uploadFile(Uint8List? photo, String name) async {
+    var auth = AuthProvider.of(context)!.auth;
+    String currentUser = auth!.userUIDret();
+    final childNode = database.child('users/$currentUser/photos');
+
     if (photo == null) return;
     final destination = 'photos/$name';
 
@@ -60,6 +68,20 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
 
     if (task == null) return;
+
+    final snapshot = await task!.whenComplete(() => null);
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+
+    try {
+      final photoRecord = <String, dynamic>{
+        'imageName': name,
+        'url': downloadUrl,
+        'dateCreated': DateTime.now().toIso8601String()
+      };
+      await childNode.push().set(photoRecord);
+    } catch (e) {
+      print(e); //Create alerts for these.
+    }
   }
 
   Widget buildUploadStatus(UploadTask task) => StreamBuilder<TaskSnapshot>(
@@ -69,7 +91,8 @@ class _HomePageState extends State<HomePage> {
             final snap = snapsot.data!;
             final progress = snap.bytesTransferred / snap.totalBytes;
             final percentage = (progress * 100).toStringAsFixed(2);
-            return Text("$percentage %");
+            return Text(
+                "$percentage %"); //Changes Upload Status to alert same as errors.
           } else {
             return Container();
           }
@@ -156,26 +179,6 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 selectFile();
                 Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text("Write Database"),
-              leading: const Icon(Icons.pending_actions),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const DatabaseWrite()));
-              },
-            ),
-            ListTile(
-              title: const Text("Read Database"),
-              leading: const Icon(Icons.reply_all_outlined),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const DatabaseRead()));
               },
             ),
             ListTile(

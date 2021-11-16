@@ -9,9 +9,9 @@ class FirebaseAPI {
   static UploadTask? uploadBytes(String destination, Uint8List data) {
     try {
       final ref = FirebaseStorage.instance.ref(destination);
-      
+
       return ref.putData(data);
-    } on FirebaseException catch (e) {
+    } on FirebaseException {
       return null;
     }
   }
@@ -30,16 +30,6 @@ class FirebaseAPI {
   static Future<List<FirebaseFile>> listAll(String path) async {
     final ref = FirebaseStorage.instance.ref(path);
     final result = await ref.listAll();
-    final names = result.items
-        .asMap()
-        .map((key, value) {
-          final name = value.name;
-          print(name);
-          return MapEntry(key, value);
-        })
-        .values
-        .toList();
-
     final urls = await _getDownloadUrls(result.items);
 
     return urls

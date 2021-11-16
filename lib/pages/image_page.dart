@@ -14,6 +14,7 @@ class ImagePage extends StatelessWidget {
         title: Text(file.name),
         centerTitle: true,
         actions: [
+          IconButton(onPressed: () {}, icon: Icon(Icons.edit_rounded)),
           IconButton(
               onPressed: () async {
                 _launchURL(file.url);
@@ -37,7 +38,6 @@ class ImagePage extends StatelessWidget {
   }
 
   void _launchURL(final urlString) async {
-    final url = urlString;
     if (await canLaunch(urlString)) {
       await launch(urlString);
     }
