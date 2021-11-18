@@ -33,12 +33,6 @@ class FirebaseAPI {
     await childNode.push().set(record);
   }
 
-  Future<List> getFileData(FullMetadata data) async {
-    final size = data.size;
-    final timeCreated = data.timeCreated;
-    return [size, timeCreated];
-  }
-
   static Future<List<FirebaseFile>> listAll(String path) async {
     final ref = FirebaseStorage.instance.ref(path);
     final result = await ref.listAll();

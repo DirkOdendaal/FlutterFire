@@ -18,6 +18,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final database = FirebaseDatabase(
+          databaseURL:
+              "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+      .reference();
   late Future<List<FirebaseFile>> fileList; //This is for Realtime Database
   late Future<List<FirebaseFile>> futureFiles; //This is for Storage
   UploadTask? task;
@@ -28,8 +32,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     setUserUID();
-    // futureFiles = FirebaseAPI.listAll('photos/');
-    _activateListeners();
+    //futureFiles = FirebaseAPI.listAll('photos/');
+    fileList = getInitRecords();
+    //_activateListeners();
   }
 
   @override
@@ -43,11 +48,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   StreamSubscription setRecordValueChangedListener(String currentUser) {
-    final database = FirebaseDatabase(
-            databaseURL:
-                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
-        .reference();
-
     return database.child('users/$currentUser/photos').onValue.listen((event) {
       final data = Map<String, dynamic>.from(event.snapshot.value);
       fileList = data
@@ -61,6 +61,23 @@ class _HomePageState extends State<HomePage> {
           .values
           .toList() as Future<List<FirebaseFile>>;
     });
+  }
+
+  Future<List<FirebaseFile>> getInitRecords() async {
+    final resp = await database.child('users/$currentUser/photos').get();
+
+    final data = Map<String, dynamic>.from(resp.value);
+
+    return data
+        .map((key, value) {
+          final name = value["imageName"] as String;
+          final date = value["dateCreated"] as String;
+          final url = value["url"] as String;
+          final file = FirebaseFile(name: name, dateCreated: date, url: url);
+          return MapEntry(key, file);
+        })
+        .values
+        .toList();
   }
 
   void setUserUID() {
