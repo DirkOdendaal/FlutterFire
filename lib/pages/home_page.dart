@@ -22,8 +22,7 @@ class _HomePageState extends State<HomePage> {
           databaseURL:
               "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
       .reference();
-  late Future<List<FirebaseFile>> fileList; //This is for Realtime Database
-  late Future<List<FirebaseFile>> futureFiles; //This is for Storage
+  late List<FirebaseFile> streamList;
   UploadTask? task;
   late String currentUser;
   late StreamSubscription _currentUserCollectionStream;
@@ -32,35 +31,11 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     setUserUID();
-    //futureFiles = FirebaseAPI.listAll('photos/');
-    fileList = getInitRecords();
-    //_activateListeners();
   }
 
   @override
   void deactivate() {
-    _currentUserCollectionStream.cancel();
     super.deactivate();
-  }
-
-  Future<void> _activateListeners() async {
-    _currentUserCollectionStream = setRecordValueChangedListener(currentUser);
-  }
-
-  StreamSubscription setRecordValueChangedListener(String currentUser) {
-    return database.child('users/$currentUser/photos').onValue.listen((event) {
-      final data = Map<String, dynamic>.from(event.snapshot.value);
-      fileList = data
-          .map((key, value) {
-            final name = value["imageName"] as String;
-            final date = value["dateCreated"] as String;
-            final url = value["url"] as String;
-            final file = FirebaseFile(name: name, dateCreated: date, url: url);
-            return MapEntry(key, file);
-          })
-          .values
-          .toList() as Future<List<FirebaseFile>>;
-    });
   }
 
   Future<List<FirebaseFile>> getInitRecords() async {
@@ -153,34 +128,35 @@ class _HomePageState extends State<HomePage> {
         },
       );
 
-  Widget buildGrid(BuildContext context, FirebaseFile file) => Draggable(
-        child: GridTile(
-          child: GestureDetector(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                alignment: Alignment.center,
-                child: Image.network(file.url),
-                decoration:
-                    BoxDecoration(borderRadius: BorderRadius.circular(5)),
-              ),
+  Widget buildGrid(BuildContext context, FirebaseFile file) {
+    return Draggable(
+      child: GridTile(
+        child: GestureDetector(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              alignment: Alignment.center,
+              child: Image.network(file.url),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
             ),
-            onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => ImagePage(file: file))),
           ),
+          onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => ImagePage(file: file))),
         ),
-        feedback: Container(
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              Image.asset('assets/images/placeholder.png'),
-            ],
-          ),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-          width: 48,
-          height: 48,
+      ),
+      feedback: Container(
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            Image.asset('assets/images/placeholder.png'),
+          ],
         ),
-      );
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+        width: 48,
+        height: 48,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,37 +167,50 @@ class _HomePageState extends State<HomePage> {
           task != null ? buildUploadStatus(task!) : Container(),
         ],
       ),
-      body: FutureBuilder<List<FirebaseFile>>(
-          future: fileList,
-          builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              default:
-                if (snapshot.hasError) {
-                  return const Center(
-                    child: Text("Some Errors"),
-                  );
-                } else {
-                  final files = snapshot.data;
+      body: StreamBuilder(
+        stream: database.child('users/$currentUser/photos').onValue,
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            default:
+              if (snapshot.hasData) {
+                final data = Map<String, dynamic>.from(
+                    (snapshot.data! as Event).snapshot.value);
+                streamList = data
+                    .map((key, value) {
+                      final name = value["imageName"] as String;
+                      final date = value["dateCreated"] as String;
+                      final url = value["url"] as String;
+                      final file =
+                          FirebaseFile(name: name, dateCreated: date, url: url);
+                      return MapEntry(key, file);
+                    })
+                    .values
+                    .toList();
 
-                  return GridView.builder(
-                      itemCount: files!.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 200,
-                              crossAxisSpacing: 20,
-                              childAspectRatio: 3 / 2,
-                              mainAxisSpacing: 20),
-                      itemBuilder: (context, index) {
-                        final file = files[index];
-                        return buildGrid(context, file);
-                      });
-                }
-            }
-          }),
+                return GridView.builder(
+                    itemCount: streamList.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            crossAxisSpacing: 20,
+                            childAspectRatio: 3 / 2,
+                            mainAxisSpacing: 20),
+                    itemBuilder: (context, index) {
+                      final file = streamList[index];
+                      return buildGrid(context, file);
+                    });
+              } else {
+                return const Center(
+                  child: Text("You have no files"),
+                );
+              }
+          }
+        },
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
