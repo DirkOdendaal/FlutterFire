@@ -37,23 +37,6 @@ class _HomePageState extends State<HomePage> {
     super.deactivate();
   }
 
-  Future<List<FirebaseFile>> getInitRecords() async {
-    final resp = await database.child('users/$currentUser/photos').get();
-
-    final data = Map<String, dynamic>.from(resp.value);
-
-    return data
-        .map((key, value) {
-          final name = value["imageName"] as String;
-          final date = value["dateCreated"] as String;
-          final url = value["url"] as String;
-          final file = FirebaseFile(name: name, dateCreated: date, url: url);
-          return MapEntry(key, file);
-        })
-        .values
-        .toList();
-  }
-
   void setUserUID() {
     currentUser = Auth().userUIDret();
   }
@@ -107,6 +90,7 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final photoRecord = <String, dynamic>{
+        'path': destination,
         'imageName': name,
         'url': downloadUrl,
         'dateCreated': DateTime.now().toIso8601String()
@@ -191,11 +175,17 @@ class _HomePageState extends State<HomePage> {
 
                   streamList = data
                       .map((key, value) {
+                        final id = key;
                         final name = value["imageName"] as String;
                         final date = value["dateCreated"] as String;
                         final url = value["url"] as String;
+                        final path = value["path"] as String;
                         final file = FirebaseFile(
-                            name: name, dateCreated: date, url: url);
+                            name: name,
+                            dateCreated: date,
+                            url: url,
+                            id: id,
+                            path: path);
                         return MapEntry(key, file);
                       })
                       .values

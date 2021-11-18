@@ -1,7 +1,8 @@
+import 'package:cloud/classes/auth.dart';
+import 'package:cloud/classes/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cloud/classes/firebase_api.dart';
 
 class ImagePage extends StatelessWidget {
   final FirebaseFile file;
@@ -14,7 +15,7 @@ class ImagePage extends StatelessWidget {
         title: Text(file.name),
         centerTitle: true,
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.edit_rounded)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.edit_rounded)),
           IconButton(
               onPressed: () async {
                 _launchURL(file.url);
@@ -22,7 +23,8 @@ class ImagePage extends StatelessWidget {
               icon: const Icon(Icons.download_rounded)),
           IconButton(
               onPressed: () {
-                // FirebaseAPI.deleteImage(file);
+                FirebaseAPI.deleteImage(file.id, Auth().userUIDret());
+                FirebaseAPI.deleteImageStorage(file.path);
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.delete_forever)),
