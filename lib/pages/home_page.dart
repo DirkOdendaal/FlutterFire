@@ -5,6 +5,7 @@ import 'package:cloud/classes/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/pages/image_page.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud/classes/auth_provider.dart';
@@ -27,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     setUserUID();
-    futureFiles = FirebaseAPI.listAll('photos/');
+    // futureFiles = FirebaseAPI.listAll('photos/');
     _activateListeners();
   }
 
@@ -38,7 +39,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _activateListeners() async {
-    _currentUserCollectionStream = FirebaseAPI.setRecordValueChangedListener();
+    _currentUserCollectionStream = setRecordValueChangedListener(currentUser);
+  }
+
+  StreamSubscription setRecordValueChangedListener(String currentUser) {
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+        .reference();
+
+    return database.child('users/$currentUser/photos').onValue.listen((event) {
+      final data = Map<String, dynamic>.from(event.snapshot.value);
+      fileList = data
+          .map((key, value) {
+            final name = value["imageName"] as String;
+            final date = value["dateCreated"] as String;
+            final url = value["url"] as String;
+            final file = FirebaseFile(name: name, dateCreated: date, url: url);
+            return MapEntry(key, file);
+          })
+          .values
+          .toList() as Future<List<FirebaseFile>>;
+    });
   }
 
   void setUserUID() {
@@ -73,8 +95,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future uploadFile(Uint8List? photo, String name) async {
-    // final childNode = _database.child('users/$currentUser/photos');
-
     if (photo == null) return;
     final destination = 'photos/$name';
 
@@ -94,7 +114,8 @@ class _HomePageState extends State<HomePage> {
       };
 
       //move to api
-      // await childNode.push().set(photoRecord);
+      //
+      FirebaseAPI.pushPhotoToDatabase(photoRecord, currentUser);
     } catch (e) {
       print(e); //Create alerts for these.
     }
@@ -154,7 +175,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: FutureBuilder<List<FirebaseFile>>(
-          future: futureFiles,
+          future: fileList,
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:

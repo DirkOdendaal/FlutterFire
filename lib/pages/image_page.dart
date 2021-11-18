@@ -22,7 +22,7 @@ class ImagePage extends StatelessWidget {
               icon: const Icon(Icons.download_rounded)),
           IconButton(
               onPressed: () {
-                FirebaseAPI.deleteImage(file);
+                // FirebaseAPI.deleteImage(file);
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.delete_forever)),

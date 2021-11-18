@@ -4,8 +4,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud/models/firebase_file.dart';
 
-import 'auth.dart';
-
 class FirebaseAPI {
   static Future<List<String>> _getDownloadUrls(List<Reference> refs) =>
       Future.wait(refs.map((ref) => ref.getDownloadURL()).toList());
@@ -20,9 +18,19 @@ class FirebaseAPI {
     }
   }
 
-  static Future<void> deleteImage(FirebaseFile file) async {
-    final ref = file.ref;
-    return ref.delete();
+  // static Future<void> deleteImage(FirebaseFile file) async {
+  //   final ref = file.ref;
+  //   return ref.delete();
+  // }
+
+  static Future<void> pushPhotoToDatabase(
+      Map<String, dynamic> record, String currentUser) async {
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+        .reference();
+    final childNode = database.child('users/$currentUser/photos');
+    await childNode.push().set(record);
   }
 
   Future<List> getFileData(FullMetadata data) async {
@@ -43,29 +51,11 @@ class FirebaseAPI {
           final name = ref.name;
           final file = FirebaseFile(
               name: name,
-              ref: ref,
               url: url,
               dateCreated: DateTime.now().toIso8601String());
           return MapEntry(index, file);
         })
         .values
         .toList();
-  }
-
-  static StreamSubscription setRecordValueChangedListener() {
-    String currentUser = Auth().userUIDret();
-
-    final database = FirebaseDatabase(
-            databaseURL:
-                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
-        .reference();
-
-    return database.child('users/$currentUser/photos').onValue.listen((event) {
-      final data = new Map<String, dynamic>.from(event.snapshot.value);
-      // final url = data['url'] as String;
-      // final name = data['imageName'] as String;
-      // final date = data['dateCreated'] as String;
-      print(event.snapshot.value);
-    });
   }
 }
