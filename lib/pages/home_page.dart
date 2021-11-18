@@ -25,7 +25,6 @@ class _HomePageState extends State<HomePage> {
   late List<FirebaseFile> streamList;
   UploadTask? task;
   late String currentUser;
-  late StreamSubscription _currentUserCollectionStream;
 
   @override
   void initState() {
@@ -70,14 +69,22 @@ class _HomePageState extends State<HomePage> {
 
   Future selectFile() async {
     try {
-      //Check Into Uploading Multiple Files now.
-      FilePickerResult? result =
-          await FilePicker.platform.pickFiles(allowMultiple: true);
-
+      Uint8List? fileBytes;
+      String fileName = "";
+      FilePickerResult? result = await FilePicker.platform
+          .pickFiles(allowMultiple: true, type: FileType.image);
       if (result != null) {
-        Uint8List? fileBytes = result.files.first.bytes;
-        String fileName = result.files.first
-            .name; //Change File name selected to GUID to upload and keep file names in storage unique
+        if (result.files.length > 1) {
+          for (var element in result.files) {
+            fileBytes = element.bytes;
+            fileName = element.name;
+            uploadFile(fileBytes, fileName);
+          }
+        } else {
+          fileBytes = result.files.first.bytes;
+          fileName = result.files.first
+              .name; //Change File name selected to GUID to upload and keep file names in storage unique
+        }
 
         uploadFile(fileBytes, fileName);
       }
@@ -177,32 +184,40 @@ class _HomePageState extends State<HomePage> {
               );
             default:
               if (snapshot.hasData) {
-                final data = Map<String, dynamic>.from(
-                    (snapshot.data! as Event).snapshot.value);
-                streamList = data
-                    .map((key, value) {
-                      final name = value["imageName"] as String;
-                      final date = value["dateCreated"] as String;
-                      final url = value["url"] as String;
-                      final file =
-                          FirebaseFile(name: name, dateCreated: date, url: url);
-                      return MapEntry(key, file);
-                    })
-                    .values
-                    .toList();
+                final snapDataEvent = snapshot.data as Event;
+                final dataEventValues = snapDataEvent.snapshot.value;
+                if (dataEventValues != null) {
+                  final data = Map<String, dynamic>.from(dataEventValues);
 
-                return GridView.builder(
-                    itemCount: streamList.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200,
-                            crossAxisSpacing: 20,
-                            childAspectRatio: 3 / 2,
-                            mainAxisSpacing: 20),
-                    itemBuilder: (context, index) {
-                      final file = streamList[index];
-                      return buildGrid(context, file);
-                    });
+                  streamList = data
+                      .map((key, value) {
+                        final name = value["imageName"] as String;
+                        final date = value["dateCreated"] as String;
+                        final url = value["url"] as String;
+                        final file = FirebaseFile(
+                            name: name, dateCreated: date, url: url);
+                        return MapEntry(key, file);
+                      })
+                      .values
+                      .toList();
+
+                  return GridView.builder(
+                      itemCount: streamList.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 200,
+                              crossAxisSpacing: 20,
+                              childAspectRatio: 3 / 2,
+                              mainAxisSpacing: 20),
+                      itemBuilder: (context, index) {
+                        final file = streamList[index];
+                        return buildGrid(context, file);
+                      });
+                } else {
+                  return const Center(
+                    child: Text("You have no files"),
+                  );
+                }
               } else {
                 return const Center(
                   child: Text("You have no files"),

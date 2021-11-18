@@ -17,7 +17,7 @@ class FirebaseAPI {
       return null;
     }
   }
-
+  
   // static Future<void> deleteImage(FirebaseFile file) async {
   //   final ref = file.ref;
   //   return ref.delete();
