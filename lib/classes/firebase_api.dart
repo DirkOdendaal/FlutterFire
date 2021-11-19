@@ -36,4 +36,13 @@ class FirebaseAPI {
     final childNode = database.child('users/$currentUser/photos');
     await childNode.push().set(record);
   }
+
+  static Future<void> createFolder(String folder, currentUser) async {
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+        .reference();
+    final childNode = database.child('users/$currentUser/$folder');
+    await childNode.set("blankFolder");
+  }
 }
