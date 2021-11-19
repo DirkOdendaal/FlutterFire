@@ -149,6 +149,68 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget dataStream(BuildContext context) {
+    return StreamBuilder(
+      stream: database.child('users/$currentUser/photos').onValue,
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          default:
+            if (snapshot.hasData) {
+              final snapDataEvent = snapshot.data as Event;
+              final dataEventValues = snapDataEvent.snapshot.value;
+              if (dataEventValues != null) {
+                final data = Map<String, dynamic>.from(dataEventValues);
+
+                streamList = data
+                    .map((key, value) {
+                      final id = key;
+                      final name = value["imageName"] as String;
+                      final date = value["dateCreated"] as String;
+                      final url = value["url"] as String;
+                      final path = value["path"] as String;
+                      final file = FirebaseFile(
+                          name: name,
+                          dateCreated: date,
+                          url: url,
+                          id: id,
+                          path: path);
+                      return MapEntry(key, file);
+                    })
+                    .values
+                    .toList();
+
+                return GridView.builder(
+                    shrinkWrap: true,
+                    itemCount: streamList.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            crossAxisSpacing: 20,
+                            childAspectRatio: 3 / 2,
+                            mainAxisSpacing: 20),
+                    itemBuilder: (context, index) {
+                      final file = streamList[index];
+                      return buildGrid(context, file);
+                    });
+              } else {
+                return const Center(
+                  child: Text("You have no files"),
+                );
+              }
+            } else {
+              return const Center(
+                child: Text("You have no files"),
+              );
+            }
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,64 +220,25 @@ class _HomePageState extends State<HomePage> {
           task != null ? buildUploadStatus(task!) : Container(),
         ],
       ),
-      body: StreamBuilder(
-        stream: database.child('users/$currentUser/photos').onValue,
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            default:
-              if (snapshot.hasData) {
-                final snapDataEvent = snapshot.data as Event;
-                final dataEventValues = snapDataEvent.snapshot.value;
-                if (dataEventValues != null) {
-                  final data = Map<String, dynamic>.from(dataEventValues);
-
-                  streamList = data
-                      .map((key, value) {
-                        final id = key;
-                        final name = value["imageName"] as String;
-                        final date = value["dateCreated"] as String;
-                        final url = value["url"] as String;
-                        final path = value["path"] as String;
-                        final file = FirebaseFile(
-                            name: name,
-                            dateCreated: date,
-                            url: url,
-                            id: id,
-                            path: path);
-                        return MapEntry(key, file);
-                      })
-                      .values
-                      .toList();
-
-                  return GridView.builder(
-                      itemCount: streamList.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 200,
-                              crossAxisSpacing: 20,
-                              childAspectRatio: 3 / 2,
-                              mainAxisSpacing: 20),
-                      itemBuilder: (context, index) {
-                        final file = streamList[index];
-                        return buildGrid(context, file);
-                      });
-                } else {
-                  return const Center(
-                    child: Text("You have no files"),
-                  );
-                }
-              } else {
-                return const Center(
-                  child: Text("You have no files"),
-                );
-              }
-          }
-        },
-      ),
+      body: Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  TextButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.add_box),
+                      label: const Text("Add Folder"))
+                ],
+              ),
+            )
+          ],
+        ),
+        dataStream(context)
+      ]),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,

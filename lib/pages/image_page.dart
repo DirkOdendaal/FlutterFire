@@ -15,7 +15,11 @@ class ImagePage extends StatelessWidget {
         title: Text(file.name),
         centerTitle: true,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.edit_rounded)),
+          IconButton(
+              onPressed: () {
+                //Meta data Update Call Here.
+              },
+              icon: const Icon(Icons.edit_rounded)),
           IconButton(
               onPressed: () async {
                 _launchURL(file.url);
