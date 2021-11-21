@@ -16,7 +16,7 @@ class PictureGrid extends StatelessWidget {
     late List<FirebaseFile> streamList;
 
     return StreamBuilder(
-      stream: database.child('users/$currentUser/photos').onValue,
+      stream: database.child('users/$currentUser/root').onValue,
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
@@ -35,11 +35,13 @@ class PictureGrid extends StatelessWidget {
                       final id = key;
                       final name = value["imageName"] as String;
                       final date = value["dateCreated"] as String;
+                      final dateMOd = value["dateModified"] as String;
                       final url = value["url"] as String;
                       final path = value["path"] as String;
                       final file = FirebaseFile(
                           name: name,
                           dateCreated: date,
+                          dateModified: dateMOd,
                           url: url,
                           id: id,
                           path: path);

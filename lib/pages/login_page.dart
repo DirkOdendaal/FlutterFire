@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
           await auth!.createUserWithEmailAndPassword(_email, _password);
         }
       } catch (e) {
-        print('Error $e');
+        print('Login Error $e');
         // Handle errors here
       }
     }
