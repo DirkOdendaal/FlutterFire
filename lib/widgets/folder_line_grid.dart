@@ -1,3 +1,4 @@
+import 'package:cloud/pages/home_page.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +11,7 @@ class FolderBar extends StatefulWidget {
 }
 
 class _FolderBarState extends State<FolderBar> {
+  String currentFolder = "";
   @override
   Widget build(BuildContext context) {
     final database = FirebaseDatabase(
@@ -40,9 +42,9 @@ class _FolderBarState extends State<FolderBar> {
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: 200,
-                              crossAxisSpacing: 10,
-                              childAspectRatio: 15 / 2,
-                              mainAxisSpacing: 10),
+                              crossAxisSpacing: 5,
+                              childAspectRatio: 10 / 2,
+                              mainAxisSpacing: 5),
                       itemBuilder: (context, index) {
                         final folderName = streamList.elementAt(index);
                         return buildGrid(context, folderName, index);
@@ -62,7 +64,9 @@ class _FolderBarState extends State<FolderBar> {
         child: Container(
       alignment: Alignment.centerLeft,
       child: TextButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            HomePage.of(context)!.setCurrentFolder(foldername);
+          },
           icon: const Icon(Icons.folder_rounded),
           label: Text(foldername)),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),

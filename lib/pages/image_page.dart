@@ -1,13 +1,16 @@
 import 'package:cloud/classes/auth.dart';
 import 'package:cloud/classes/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
+import 'package:cloud/pages/home_page.dart';
 import 'package:cloud/widgets/alert_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImagePage extends StatefulWidget {
+  final String currentFolder;
   final FirebaseFile file;
-  const ImagePage({Key? key, required this.file}) : super(key: key);
+  const ImagePage({Key? key, required this.file, required this.currentFolder})
+      : super(key: key);
 
   @override
   State<ImagePage> createState() => _ImagePageState();
@@ -50,17 +53,13 @@ class _ImagePageState extends State<ImagePage> {
   void validateAndSubmit() async {
     if (validateAndSave()) {
       try {
+        String folder = HomePage.of(context)!.getCurrentFolder();
         await FirebaseAPI.updateCurrentImage(
-          _newImageName,
-          currentUser,
-          widget.file.id,
-        );
-        // moveToBase();
+            _newImageName, currentUser, widget.file.id, folder);
+        // moveToBase(); //Navigate back to current file but get new ref to file.
         Navigator.pop(context);
       } catch (e) {
         _displayTextInputDialog(context, 2, "Validation Login Error $e");
-
-        // Handle errors here
       }
     }
   }
@@ -116,7 +115,8 @@ class _ImagePageState extends State<ImagePage> {
               icon: const Icon(Icons.download_rounded)),
           IconButton(
               onPressed: () {
-                FirebaseAPI.deleteImage(widget.file.id, Auth().userUIDret());
+                FirebaseAPI.deleteImage(
+                    widget.file.id, currentUser, widget.currentFolder);
                 FirebaseAPI.deleteImageStorage(widget.file.path);
                 Navigator.pop(context);
               },

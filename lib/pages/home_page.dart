@@ -16,16 +16,29 @@ class HomePage extends StatefulWidget {
 
   @override
   State<HomePage> createState() => _HomePageState();
+
+  static _HomePageState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_HomePageState>();
 }
 
 class _HomePageState extends State<HomePage> {
   UploadTask? task;
+  String currentFolder = "root";
   late String currentUser;
   @override
   void initState() {
     super.initState();
 
     setUserUID();
+  }
+
+  String getCurrentFolder() {
+    return currentFolder;
+  }
+
+  void setCurrentFolder(String folder) {
+    currentFolder = folder;
+    setState(() {});
   }
 
   @override
@@ -76,8 +89,7 @@ class _HomePageState extends State<HomePage> {
           String guid = const Uuid().v1();
 
           fileBytes = result.files.first.bytes;
-          fileName =
-              "$guid | ${result.files.first.name}"; //Change File name selected to GUID to upload and keep file names in storage unique
+          fileName = "$guid | ${result.files.first.name}";
         }
 
         uploadFile(fileBytes, fileName);
@@ -95,6 +107,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
 
     if (task == null) return;
+    setState(() {});
 
     final snapshot = await task!.whenComplete(() => null);
     final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -111,9 +124,7 @@ class _HomePageState extends State<HomePage> {
         'dateModified': DateTime.now().toIso8601String()
       };
 
-      //move to api
-      //
-      FirebaseAPI.pushPhotoToDatabase(photoRecord, currentUser);
+      FirebaseAPI.pushPhotoToDatabase(photoRecord, currentUser, currentFolder);
     } catch (e) {
       _displayTextInputDialog(context, 2, "Upload To Database Error $e");
     }
@@ -126,8 +137,9 @@ class _HomePageState extends State<HomePage> {
             final snap = snapsot.data!;
             final progress = snap.bytesTransferred / snap.totalBytes;
             final percentage = (progress * 100).toStringAsFixed(2);
-            return Text(
-                "$percentage %"); //Changes Upload Status to alert same as errors.
+            return Center(
+              child: Text("$percentage %"),
+            );
           } else {
             return Container();
           }
@@ -145,7 +157,11 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(children: [
         FolderBar(currentUser: currentUser),
-        Expanded(child: PictureGrid(currentUser: currentUser))
+        Expanded(
+            child: PictureGrid(
+          currentUser: currentUser,
+          currentFolder: currentFolder,
+        ))
       ]),
       drawer: Drawer(
         child: ListView(
