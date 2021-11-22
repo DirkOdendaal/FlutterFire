@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:cloud/classes/auth.dart';
 import 'package:cloud/classes/firebase_api.dart';
+import 'package:cloud/widgets/folder_line_grid.dart';
 import 'package:cloud/widgets/photos_grid.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -19,10 +20,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   UploadTask? task;
   late String currentUser;
-
+  final TextEditingController _c = TextEditingController();
   @override
   void initState() {
     super.initState();
+
     setUserUID();
   }
 
@@ -42,6 +44,36 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Folder Name'),
+          content: TextField(
+            controller: _c,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text('Create Folder'),
+              onPressed: () {
+                FirebaseAPI.createFolder(_c.text, currentUser);
+                _c.clear();
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future selectFile() async {
@@ -130,25 +162,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: Column(children: [
-        Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextButton.icon(
-                onPressed: () {
-                  FirebaseAPI.createFolder("album", currentUser);
-                },
-                icon: const Icon(Icons.add_box),
-                label: const Text("Create Folder")),
-          ),
-          // TODO change to loop element after all nodes pulled form root folder included
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.folder),
-                label: const Text("FolderNameHere")),
-          )
-        ]),
+        FolderBar(currentUser: currentUser),
         Expanded(child: PictureGrid(currentUser: currentUser))
       ]),
       drawer: Drawer(
@@ -162,6 +176,13 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 selectFile();
                 Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text("Create Folder"),
+              leading: const Icon(Icons.create_new_folder),
+              onTap: () {
+                _displayTextInputDialog(context);
               },
             ),
             ListTile(
