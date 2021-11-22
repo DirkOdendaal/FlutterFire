@@ -12,11 +12,52 @@ class ImagePage extends StatefulWidget {
   State<ImagePage> createState() => _ImagePageState();
 }
 
+class ImageNameValidator {
+  static String? validate(String value) {
+    return value == "" ? "New Name Required" : null;
+  }
+}
+
+enum Formtype { view, edit }
+
 class _ImagePageState extends State<ImagePage> {
+  String _newImageName = "";
+  final _formKey = GlobalKey<FormState>();
+  Formtype _formType = Formtype.view;
+
   bool baseState = true;
   @override
   Widget build(BuildContext context) {
     return baseState ? baseEntry(context) : editState(context);
+  }
+
+  void validateAndSubmit() async {
+    if (validateAndSave()) {
+      try {
+        // var auth = AuthProvider.of(context)!.auth;
+        // if (_formType == Formtype.login) {
+        //   await auth!.signInWithEmailAndPassword(_email, _password);
+        // } else {
+        //   await auth!.createUserWithEmailAndPassword(_email, _password);
+        // }
+      } catch (e) {
+        print('Login Error $e');
+        // Handle errors here
+      }
+    }
+  }
+
+  void moveToEdita() {
+    // form
+  }
+
+  bool validateAndSave() {
+    final form = _formKey.currentState;
+    if (form!.validate()) {
+      form.save();
+      return true;
+    }
+    return false;
   }
 
   Scaffold baseEntry(BuildContext context) {
@@ -103,7 +144,7 @@ class _ImagePageState extends State<ImagePage> {
         actions: [
           IconButton(
               onPressed: () {
-                //Update Record API Call
+                // FirebaseAPI.updateCurrentImage(file, currentUser)
               },
               icon: const Icon(Icons.save_outlined)),
         ],
@@ -130,10 +171,16 @@ class _ImagePageState extends State<ImagePage> {
                       ),
                     ),
                     Container(
-                      child: const TextField(
-                        decoration: InputDecoration(
-                            border: UnderlineInputBorder(),
-                            hintText: "New Image Name"),
+                      child: Form(
+                        key: _formKey,
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                              border: UnderlineInputBorder(),
+                              hintText: "New Image Name"),
+                          onSaved: (value) => _newImageName = value!,
+                          validator: (value) =>
+                              ImageNameValidator.validate(value!),
+                        ),
                       ),
                       width: 150,
                       height: 50,
