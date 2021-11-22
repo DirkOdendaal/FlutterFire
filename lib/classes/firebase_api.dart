@@ -57,4 +57,13 @@ class FirebaseAPI {
     final childNode = database.child('users/$currentUser/$folder');
     await childNode.set("blankFolder");
   }
+
+  static Future<void> createUserRecord(String email, String uid) async {
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+        .reference();
+    final childNode = database.child('usersList/');
+    await childNode.set({'email': email, 'uid': uid});
+  }
 }
