@@ -1,6 +1,7 @@
 import 'package:cloud/classes/auth.dart';
 import 'package:cloud/classes/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
+import 'package:cloud/widgets/alert_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,10 +58,23 @@ class _ImagePageState extends State<ImagePage> {
         // moveToBase();
         Navigator.pop(context);
       } catch (e) {
-        print('Login Error $e');
+        _displayTextInputDialog(context, 2, "Validation Login Error $e");
+
         // Handle errors here
       }
     }
+  }
+
+  Future<void> _displayTextInputDialog(
+      BuildContext context, int newState, String message) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return Alert(
+            meassage: message,
+            alertState: newState,
+          );
+        });
   }
 
   void moveToEditState() {

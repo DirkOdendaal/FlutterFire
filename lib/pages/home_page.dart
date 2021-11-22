@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:cloud/classes/auth.dart';
 import 'package:cloud/classes/firebase_api.dart';
+import 'package:cloud/widgets/alert_dialog.dart';
 import 'package:cloud/widgets/folder_line_grid.dart';
 import 'package:cloud/widgets/photos_grid.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,7 +21,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   UploadTask? task;
   late String currentUser;
-  final TextEditingController _c = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -42,38 +42,20 @@ class _HomePageState extends State<HomePage> {
       var auth = AuthProvider.of(context)!.auth;
       await auth!.signOut();
     } catch (e) {
-      print(e);
+      _displayTextInputDialog(context, 2, "Logout Error $e");
     }
   }
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
+  Future<void> _displayTextInputDialog(
+      BuildContext context, int newState, String message) async {
     return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Folder Name'),
-          content: TextField(
-            controller: _c,
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            TextButton(
-              child: const Text('Create Folder'),
-              onPressed: () {
-                FirebaseAPI.createFolder(_c.text, currentUser);
-                _c.clear();
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
+        context: context,
+        builder: (context) {
+          return Alert(
+            meassage: message,
+            alertState: newState,
+          );
+        });
   }
 
   Future selectFile() async {
@@ -85,13 +67,13 @@ class _HomePageState extends State<HomePage> {
       if (result != null) {
         if (result.files.length > 1) {
           for (var element in result.files) {
-            String guid = Uuid().v1();
+            String guid = const Uuid().v1();
             fileBytes = element.bytes;
             fileName = "$guid | ${element.name}";
             uploadFile(fileBytes, fileName);
           }
         } else {
-          String guid = Uuid().v1();
+          String guid = const Uuid().v1();
 
           fileBytes = result.files.first.bytes;
           fileName =
@@ -101,7 +83,7 @@ class _HomePageState extends State<HomePage> {
         uploadFile(fileBytes, fileName);
       }
     } catch (e) {
-      print(e);
+      _displayTextInputDialog(context, 2, "Select File Error $e");
     }
   }
 
@@ -133,7 +115,7 @@ class _HomePageState extends State<HomePage> {
       //
       FirebaseAPI.pushPhotoToDatabase(photoRecord, currentUser);
     } catch (e) {
-      print(e); //Create alerts for these.
+      _displayTextInputDialog(context, 2, "Upload To Database Error $e");
     }
   }
 
@@ -181,8 +163,13 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               title: const Text("Create Folder"),
               leading: const Icon(Icons.create_new_folder),
-              onTap: () {
-                _displayTextInputDialog(context);
+              onTap: () async {
+                await _displayTextInputDialog(
+                  context,
+                  3,
+                  "Create Folder",
+                );
+                Navigator.pop(context);
               },
             ),
             ListTile(
