@@ -54,7 +54,8 @@ class _ImagePageState extends State<ImagePage> {
           currentUser,
           widget.file.id,
         );
-        moveToBase();
+        // moveToBase();
+        Navigator.pop(context);
       } catch (e) {
         print('Login Error $e');
         // Handle errors here
@@ -109,51 +110,53 @@ class _ImagePageState extends State<ImagePage> {
         ],
       ),
       body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Image.network(
-              widget.file.url,
-              fit: BoxFit.contain,
-            ),
-            Form(
-              key: _formKey,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Image Name",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(widget.file.name),
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Date Created",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(widget.file.dateCreated),
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Date Modified",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Text(widget.file.dateModified),
-                    ],
-                  ),
-                ],
+        child: FittedBox(
+          fit: BoxFit.fill,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Image.network(
+                widget.file.url,
               ),
-            )
-          ],
+              Form(
+                key: _formKey,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Image Name",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Text(widget.file.name),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Date Created",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Text(widget.file.dateCreated),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Date Modified",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Text(widget.file.dateModified),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -4,11 +4,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseAPI {
-  final database = FirebaseDatabase(
-          databaseURL:
-              "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
-      .reference();
-
   static UploadTask? uploadBytes(String destination, Uint8List data) {
     try {
       final ref = FirebaseStorage.instance.ref(destination);
