@@ -43,13 +43,14 @@ class FirebaseAPI {
   }
 
   static Future<void> updateCurrentImage(
-      Map<String, dynamic> record, String currentUser) async {
+      String newname, String currentUser, String key) async {
     final database = FirebaseDatabase(
             databaseURL:
                 "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
         .reference();
-    final childNode = database.child("users/$currentUser/root");
-    await childNode.push().set(record);
+    final dateMod = DateTime.now().toIso8601String();
+    final childNode = database.child("users/$currentUser/root/$key");
+    await childNode.update({'imageName': newname, 'dateModified': dateMod});
   }
 
   static Future<void> createFolder(String folder, currentUser) async {

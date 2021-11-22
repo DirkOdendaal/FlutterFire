@@ -84,12 +84,15 @@ class _HomePageState extends State<HomePage> {
 
     final snapshot = await task!.whenComplete(() => null);
     final downloadUrl = await snapshot.ref.getDownloadURL();
+    final indexOfPoint = name.lastIndexOf(".");
+    final extention = name.substring(indexOfPoint);
 
     try {
       final photoRecord = <String, dynamic>{
         'path': destination,
         'imageName': name,
         'url': downloadUrl,
+        'extention': extention,
         'dateCreated': DateTime.now().toIso8601String(),
         'dateModified': DateTime.now().toIso8601String()
       };

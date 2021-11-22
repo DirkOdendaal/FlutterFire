@@ -5,6 +5,7 @@ class FirebaseFile {
   final String dateCreated;
   final String dateModified;
   final String id;
+  final String extention;
 
   const FirebaseFile(
       {required this.name,
@@ -12,5 +13,6 @@ class FirebaseFile {
       required this.url,
       required this.dateCreated,
       required this.dateModified,
+      required this.extention,
       required this.id});
 }

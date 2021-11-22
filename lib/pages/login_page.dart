@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   String _password = "";
   Formtype _formType = Formtype.login;
   final formKey = GlobalKey<FormState>();
+
   bool validateAndSave() {
     final form = formKey.currentState;
     if (form!.validate()) {
@@ -35,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     }
     return false;
   }
+  
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
@@ -60,8 +62,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void moveToLogin() {
+    formKey.currentState!.reset();
     setState(() {
-      formKey.currentState!.reset();
       _formType = Formtype.login;
     });
   }

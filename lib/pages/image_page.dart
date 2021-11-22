@@ -12,15 +12,16 @@ class ImagePage extends StatefulWidget {
   State<ImagePage> createState() => _ImagePageState();
 }
 
+enum Formtype { edit, view }
+
 class ImageNameValidator {
   static String? validate(String value) {
     return value == "" ? "New Name Required" : null;
   }
 }
 
-enum Formtype { view, edit }
-
 class _ImagePageState extends State<ImagePage> {
+  late String currentUser;
   String _newImageName = "";
   final _formKey = GlobalKey<FormState>();
   Formtype _formType = Formtype.view;
@@ -28,18 +29,32 @@ class _ImagePageState extends State<ImagePage> {
   bool baseState = true;
   @override
   Widget build(BuildContext context) {
-    return baseState ? baseEntry(context) : editState(context);
+    if (_formType == Formtype.edit) {
+      return editState(context);
+    } else {
+      return baseEntry();
+    }
+  }
+
+  void setUserUID() {
+    currentUser = Auth().userUIDret();
+  }
+
+  @override
+  void initState() {
+    setUserUID();
+    super.initState();
   }
 
   void validateAndSubmit() async {
     if (validateAndSave()) {
       try {
-        // var auth = AuthProvider.of(context)!.auth;
-        // if (_formType == Formtype.login) {
-        //   await auth!.signInWithEmailAndPassword(_email, _password);
-        // } else {
-        //   await auth!.createUserWithEmailAndPassword(_email, _password);
-        // }
+        await FirebaseAPI.updateCurrentImage(
+          _newImageName,
+          currentUser,
+          widget.file.id,
+        );
+        moveToBase();
       } catch (e) {
         print('Login Error $e');
         // Handle errors here
@@ -47,8 +62,18 @@ class _ImagePageState extends State<ImagePage> {
     }
   }
 
-  void moveToEdita() {
-    // form
+  void moveToEditState() {
+    _formKey.currentState!.reset();
+    setState(() {
+      _formType = Formtype.edit;
+    });
+  }
+
+  void moveToBase() {
+    _formKey.currentState!.reset();
+    setState(() {
+      _formType = Formtype.view;
+    });
   }
 
   bool validateAndSave() {
@@ -60,14 +85,13 @@ class _ImagePageState extends State<ImagePage> {
     return false;
   }
 
-  Scaffold baseEntry(BuildContext context) {
+  Scaffold baseEntry() {
     return Scaffold(
       appBar: AppBar(
         actions: [
           IconButton(
               onPressed: () {
-                baseState = false;
-                setState(() {});
+                moveToEditState();
               },
               icon: const Icon(Icons.edit_rounded)),
           IconButton(
@@ -93,38 +117,41 @@ class _ImagePageState extends State<ImagePage> {
               widget.file.url,
               fit: BoxFit.contain,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "Image Name",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+            Form(
+              key: _formKey,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Image Name",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
-                    Text(widget.file.name),
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "Date Created",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      Text(widget.file.name),
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Date Created",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
-                    Text(widget.file.dateCreated),
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "Date Modified",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      Text(widget.file.dateCreated),
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Date Modified",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
-                    Text(widget.file.dateModified),
-                  ],
-                ),
-              ],
+                      Text(widget.file.dateModified),
+                    ],
+                  ),
+                ],
+              ),
             )
           ],
         ),
@@ -144,7 +171,7 @@ class _ImagePageState extends State<ImagePage> {
         actions: [
           IconButton(
               onPressed: () {
-                // FirebaseAPI.updateCurrentImage(file, currentUser)
+                validateAndSubmit();
               },
               icon: const Icon(Icons.save_outlined)),
         ],
@@ -170,14 +197,15 @@ class _ImagePageState extends State<ImagePage> {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    Container(
+                    SizedBox(
                       child: Form(
                         key: _formKey,
                         child: TextFormField(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                               border: UnderlineInputBorder(),
                               hintText: "New Image Name"),
-                          onSaved: (value) => _newImageName = value!,
+                          onSaved: (value) =>
+                              _newImageName = value! + widget.file.extention,
                           validator: (value) =>
                               ImageNameValidator.validate(value!),
                         ),

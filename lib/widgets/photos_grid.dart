@@ -38,12 +38,14 @@ class PictureGrid extends StatelessWidget {
                       final dateMOd = value["dateModified"] as String;
                       final url = value["url"] as String;
                       final path = value["path"] as String;
+                      final extent = value["extention"] as String;
                       final file = FirebaseFile(
                           name: name,
                           dateCreated: date,
                           dateModified: dateMOd,
                           url: url,
                           id: id,
+                          extention: extent,
                           path: path);
                       return MapEntry(key, file);
                     })
