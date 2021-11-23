@@ -3,6 +3,7 @@ import 'package:cloud/classes/firebase_api.dart';
 import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/models/user.dart';
 import 'package:cloud/widgets/alert_dialog.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,11 +26,17 @@ class ImageNameValidator {
 }
 
 class _ImagePageState extends State<ImagePage> {
-  late Future<List<User>?> users;
+  late List<User> users;
   late String currentUser;
+  String _searchFunctionString = "";
+
   String _newImageName = "";
   final _formKey = GlobalKey<FormState>();
   Formtype _formType = Formtype.view;
+  final database = FirebaseDatabase(
+          databaseURL:
+              "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+      .reference();
 
   bool baseState = true;
   @override
@@ -91,9 +98,6 @@ class _ImagePageState extends State<ImagePage> {
   }
 
   void moveToSearch() {
-    users = FirebaseAPI.getUsers();
-    print(users);
-
     _formKey.currentState!.reset();
     setState(() {
       _formType = Formtype.search;
@@ -112,22 +116,19 @@ class _ImagePageState extends State<ImagePage> {
   AppBar buildAppBar() {
     if (_formType == Formtype.search) {
       return AppBar(
-        leading: const Icon(Icons.search),
         title: Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-          child: TextFormField(
-            decoration: const InputDecoration(
-                border: UnderlineInputBorder(), hintText: "Search ..."),
-            style: const TextStyle(color: Colors.white),
+          child: GestureDetector(
+            child: TextFormField(
+              decoration: const InputDecoration(
+                  border: UnderlineInputBorder(), hintText: "Search ..."),
+              style: const TextStyle(color: Colors.white),
+              onChanged: (value) {
+                print(value);
+              },
+            ),
           ),
         ),
-        actions: [
-          IconButton(
-              onPressed: () {
-                moveToBase();
-              },
-              icon: const Icon(Icons.cancel))
-        ],
       );
     } else {
       return AppBar(
@@ -160,7 +161,7 @@ class _ImagePageState extends State<ImagePage> {
     }
   }
 
-  Widget baseEntry() {
+  Widget basEntryBody() {
     String fileName = "";
     if (widget.file.name.lastIndexOf(' | ') != -1) {
       fileName =
@@ -168,9 +169,75 @@ class _ImagePageState extends State<ImagePage> {
     } else {
       fileName = widget.file.name;
     }
-    return Scaffold(
-      appBar: buildAppBar(),
-      body: Center(
+
+    if (_formType == Formtype.search) {
+      final childNode;
+      if (_searchFunctionString == "") {
+        childNode = database.child('usersList/').onValue;
+      } else {
+        childNode =
+            database.child('usersList/').startAt(_searchFunctionString).onValue;
+      }
+      print(childNode);
+
+      return StreamBuilder<Object>(
+          stream: childNode,
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              default:
+                if (snapshot.hasData) {
+                  final snapDataEvent = snapshot.data as Event;
+                  final dataEventValues = snapDataEvent.snapshot.value;
+                  if (dataEventValues != null &&
+                      dataEventValues != "blankFolder") {
+                    final data = Map<String, dynamic>.from(dataEventValues);
+
+                    users = data
+                        .map((key, value) {
+                          final email = value['email'] as String;
+                          final uid = key;
+                          final user = User(email: email, uid: uid);
+                          return MapEntry(key, user);
+                        })
+                        .values
+                        .toList();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(
+                          child: ListView.builder(
+                              itemCount: users.length,
+                              itemBuilder: (context, index) {
+                                final user = users[index];
+                                if (user.uid != currentUser) {
+                                  return buildList(context, user);
+                                }
+                                return Container();
+                              }),
+                          height: 100,
+                        ),
+                        Expanded(
+                          child: Image.network(
+                            widget.file.url,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Container();
+                  }
+                } else {
+                  return Container();
+                }
+            }
+          });
+    } else {
+      return Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -220,8 +287,33 @@ class _ImagePageState extends State<ImagePage> {
             )
           ],
         ),
-      ),
-    );
+      );
+    }
+  }
+
+  Widget buildList(BuildContext context, User user) {
+    return ListTile(
+        title: Text(user.email),
+        onTap: () {
+          shareFile(user.uid);
+          _displayTextInputDialog(context, 1, "Shared file to ${user.email}");
+        });
+  }
+
+  Future shareFile(String uid) async {
+    final photoRecord = <String, dynamic>{
+      'path': widget.file.path,
+      'imageName': widget.file.name,
+      'url': widget.file.url,
+      'extention': widget.file.extention,
+      'dateCreated': widget.file.dateCreated,
+      'dateModified': widget.file.dateModified
+    };
+    await FirebaseAPI.pushPhotoToDatabase(photoRecord, uid, "root");
+  }
+
+  Widget baseEntry() {
+    return Scaffold(appBar: buildAppBar(), body: basEntryBody());
   }
 
   void _launchURL(final urlString) async {

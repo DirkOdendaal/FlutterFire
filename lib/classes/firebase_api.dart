@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/models/user.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -72,7 +73,6 @@ class FirebaseAPI {
             .map((key, value) {
               final email = value['email'] as String;
               final uid = key;
-              print(uid + " " + email);
               final user = User(email: email, uid: uid);
               return MapEntry(key, user);
             })
