@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:cloud/models/user.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -7,7 +8,6 @@ class FirebaseAPI {
   static UploadTask? uploadBytes(String destination, Uint8List data) {
     try {
       final ref = FirebaseStorage.instance.ref(destination);
-
       return ref.putData(data);
     } on FirebaseException {
       return null;
@@ -58,12 +58,36 @@ class FirebaseAPI {
     await childNode.set("blankFolder");
   }
 
-  static Future<void> createUserRecord(String email, String uid) async {
+  static Future<List<User>?> getUsers() async {
     final database = FirebaseDatabase(
             databaseURL:
                 "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
         .reference();
     final childNode = database.child('usersList/');
-    await childNode.set({'email': email, 'uid': uid});
+
+    return await childNode.get().then((snapshot) async {
+      if (snapshot.value != null) {
+        final data = Map<String, dynamic>.from(snapshot.value);
+        data
+            .map((key, value) {
+              final email = value['email'] as String;
+              final uid = key;
+              print(uid + " " + email);
+              final user = User(email: email, uid: uid);
+              return MapEntry(key, user);
+            })
+            .values
+            .toList();
+      }
+    });
+  }
+
+  static Future<void> createUserRecord(String email, String uid) async {
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+        .reference();
+    final childNode = database.child('usersList/$uid');
+    await childNode.set({'email': email});
   }
 }
