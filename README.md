@@ -19,7 +19,3 @@ Also the docs on Using firebase and flutter together:
 https://firebase.flutter.dev/docs/overview
 
 
-Try it out on the link below.
-
-https://cloud-a8697.web.app
-
