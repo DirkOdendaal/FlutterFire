@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/models/user.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -72,8 +71,9 @@ class FirebaseAPI {
         data
             .map((key, value) {
               final email = value['email'] as String;
+              final username = value['usesrname'] as String;
               final uid = key;
-              final user = User(email: email, uid: uid);
+              final user = User(email: email, uid: uid, username: username);
               return MapEntry(key, user);
             })
             .values
@@ -82,12 +82,13 @@ class FirebaseAPI {
     });
   }
 
-  static Future<void> createUserRecord(String email, String uid) async {
+  static Future<void> createUserRecord(
+      String email, String uid, String username) async {
     final database = FirebaseDatabase(
             databaseURL:
                 "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
         .reference();
     final childNode = database.child('usersList/$uid');
-    await childNode.set({'email': email});
+    await childNode.set({'email': email, 'username': username});
   }
 }

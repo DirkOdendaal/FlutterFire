@@ -200,7 +200,9 @@ class _ImagePageState extends State<ImagePage> {
                         .map((key, value) {
                           final email = value['email'] as String;
                           final uid = key;
-                          final user = User(email: email, uid: uid);
+                          final username = value['username'] as String;
+                          final user =
+                              User(email: email, uid: uid, username: username);
                           return MapEntry(key, user);
                         })
                         .values

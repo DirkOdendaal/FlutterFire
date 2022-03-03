@@ -146,6 +146,20 @@ class _HomePageState extends State<HomePage> {
         },
       );
 
+  Widget header() {
+    return const UserAccountsDrawerHeader(
+      currentAccountPicture: CircleAvatar(),
+      accountEmail: Text("Account"),
+      accountName: Text(
+        "Username",
+        style: TextStyle(fontSize: 24.0),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,7 +181,7 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(child: Text("Header")),
+            header(),
             ListTile(
               title: const Text("Upload Image"),
               leading: const Icon(Icons.upload_rounded),

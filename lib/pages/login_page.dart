@@ -4,13 +4,25 @@ import 'package:cloud/classes/auth_provider.dart';
 
 class EmailFieldValidator {
   static String? validate(String value) {
-    return value == "" ? "Email Required" : null;
+    return value == "" ? "Required" : null;
+  }
+}
+
+class UsernameFieldValidator {
+  static String? validate(String value) {
+    return value == "" ? "Required" : null;
   }
 }
 
 class PasswordFieldValidator {
   static String? validate(String value) {
-    return value == "" ? "Password Required" : null;
+    if (value.isEmpty) {
+      return "Required";
+    }
+
+    if (value.length < 8) {
+      return "Minimum 8 char";
+    }
   }
 }
 
@@ -26,6 +38,9 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   String _email = "";
   String _password = "";
+  String _username = "";
+  TextEditingController _firstPassword = TextEditingController();
+  TextEditingController _secondPassword = TextEditingController();
   Formtype _formType = Formtype.login;
   final formKey = GlobalKey<FormState>();
 
@@ -57,7 +72,8 @@ class _LoginPageState extends State<LoginPage> {
         if (_formType == Formtype.login) {
           await auth!.signInWithEmailAndPassword(_email, _password);
         } else {
-          await auth!.createUserWithEmailAndPassword(_email, _password);
+          await auth!
+              .createUserWithEmailAndPassword(_email, _password, _username);
         }
       } catch (e) {
         _displayTextInputDialog(context, 2, "Login Error $e");
@@ -85,14 +101,19 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         title: const Text("Login Page"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: labelInputs() + buttonInputs(),
-            )),
+      body: Center(
+        child: SizedBox(
+          width: 500,
+          height: 500,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+                key: formKey,
+                child: Column(
+                  children: labelInputs() + buttonInputs(),
+                )),
+          ),
+        ),
       ),
     );
   }
@@ -115,14 +136,30 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       return [
         TextFormField(
+          decoration: const InputDecoration(labelText: "Username"),
+          validator: (value) => UsernameFieldValidator.validate(value!),
+          onSaved: (value) => _username = value!,
+        ),
+        TextFormField(
           decoration: const InputDecoration(labelText: "Email"),
           validator: (value) => EmailFieldValidator.validate(value!),
           onSaved: (value) => _email = value!,
         ),
         TextFormField(
+          controller: _firstPassword,
           decoration: const InputDecoration(labelText: "Password"),
           validator: (value) => PasswordFieldValidator.validate(value!),
           onSaved: (value) => _password = value!,
+          obscureText: true,
+        ),
+        TextFormField(
+          controller: _secondPassword,
+          decoration: const InputDecoration(labelText: "Confirm Password"),
+          validator: (value) {
+            if (value != _firstPassword.text) {
+              return "Passwords Don't Match";
+            }
+          },
           obscureText: true,
         ),
       ];
