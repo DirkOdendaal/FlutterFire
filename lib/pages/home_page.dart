@@ -6,10 +6,13 @@ import 'package:cloud/widgets/alert_dialog.dart';
 import 'package:cloud/widgets/folder_line_grid.dart';
 import 'package:cloud/widgets/photos_grid.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud/classes/auth_provider.dart';
 import 'package:uuid/uuid.dart';
+
+import '../models/user.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -25,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   UploadTask? task;
   String currentFolder = "root";
   late String currentUser;
+  late User user;
   @override
   void initState() {
     super.initState();
@@ -147,17 +151,51 @@ class _HomePageState extends State<HomePage> {
       );
 
   Widget header() {
-    return const UserAccountsDrawerHeader(
-      currentAccountPicture: CircleAvatar(),
-      accountEmail: Text("Account"),
-      accountName: Text(
-        "Username",
-        style: TextStyle(fontSize: 24.0),
-      ),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey,
-      ),
-    );
+    final database = FirebaseDatabase(
+            databaseURL:
+                "https://cloud-a8697-default-rtdb.europe-west1.firebasedatabase.app/")
+        .reference();
+
+    return StreamBuilder<Object>(
+        stream: database.child('usersList/$currentUser').onValue,
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            default:
+              if (snapshot.hasData) {
+                final snapDataEvent = snapshot.data as Event;
+                final dataEventValues = snapDataEvent.snapshot.value;
+                if (dataEventValues != null) {
+                  user = User(
+                      email: dataEventValues["email"],
+                      uid: currentUser,
+                      username: dataEventValues["username"]);
+                  return UserAccountsDrawerHeader(
+                    currentAccountPicture: CircleAvatar(
+                      backgroundImage: AssetImage("images/default_user.jpg"),
+                    ),
+                    accountEmail: Text(user.email),
+                    accountName: Text(
+                      user.username,
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Colors.blueGrey,
+                    ),
+                  );
+                } else {
+                  print("Snapshot has no data");
+                  return Container();
+                }
+              } else {
+                print("Snapshot has no data");
+                return Container();
+              }
+          }
+        });
   }
 
   @override

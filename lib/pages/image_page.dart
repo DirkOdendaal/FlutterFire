@@ -123,9 +123,7 @@ class _ImagePageState extends State<ImagePage> {
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(), hintText: "Search ..."),
               style: const TextStyle(color: Colors.white),
-              onChanged: (value) {
-                print(value);
-              },
+              onChanged: (value) {},
             ),
           ),
         ),
@@ -178,7 +176,6 @@ class _ImagePageState extends State<ImagePage> {
         childNode =
             database.child('usersList/').startAt(_searchFunctionString).onValue;
       }
-      print(childNode);
 
       return StreamBuilder<Object>(
           stream: childNode,

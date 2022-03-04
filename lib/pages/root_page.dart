@@ -1,5 +1,5 @@
 import 'package:cloud/classes/auth_provider.dart';
-import 'package:cloud/pages/home_page.dart';
+import 'package:cloud/pages/verify_email.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud/pages/login_page.dart';
 
@@ -14,7 +14,7 @@ class RootPage extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           final bool isLoggedIn = snapshot.hasData;
-          return isLoggedIn ? const HomePage() : const LoginPage();
+          return isLoggedIn ? VerifyEmailPage() : const LoginPage();
         } else {
           return _waitingScreen();
         }
