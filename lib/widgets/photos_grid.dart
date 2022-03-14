@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud/models/firebase_file.dart';
 import 'package:cloud/pages/image_page.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -18,9 +20,12 @@ class PictureGrid extends StatelessWidget {
         .reference();
     late List<FirebaseFile> streamList;
 
+    Stream _dataStream =
+        database.child('users/$currentUser/$currentFolder').onValue;
+
     return StreamBuilder(
-      stream: database.child('users/$currentUser/$currentFolder').onValue,
-      builder: (context, snapshot) {
+      stream: _dataStream,
+      builder: (context, AsyncSnapshot snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
             return const Center(
@@ -69,13 +74,15 @@ class PictureGrid extends StatelessWidget {
                       return buildGrid(context, file);
                     });
               } else {
+                print("DataEventValues Blank");
                 return const Center(
-                  child: Text("You have no files"),
+                  child: Text("You have no files in This Folder"),
                 );
               }
             } else {
+              print("Snapshot Blank");
               return const Center(
-                child: Text("You have no files"),
+                child: Text("You have no files in This Folder"),
               );
             }
         }

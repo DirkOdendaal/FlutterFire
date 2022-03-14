@@ -3,8 +3,8 @@ import 'package:cloud/classes/firebase_api.dart';
 import 'package:flutter/material.dart';
 
 class Alert extends StatefulWidget {
-  final meassage;
-  final alertState;
+  final String meassage;
+  final int alertState;
   const Alert({Key? key, required this.meassage, required this.alertState})
       : super(key: key);
 

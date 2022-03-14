@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class VerifyEmailPage extends StatefulWidget {
-  VerifyEmailPage({Key? key}) : super(key: key);
+  const VerifyEmailPage({Key? key}) : super(key: key);
 
   @override
   State<VerifyEmailPage> createState() => _VerifyEmailPageState();
@@ -53,7 +53,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       await Future.delayed(const Duration(seconds: 5));
       setState(() => canResendEmail = true);
     } on Exception catch (e) {
-      print(e.toString());
+      // TODO : Catch Verify Exceptions
     }
   }
 

@@ -23,6 +23,7 @@ class PasswordFieldValidator {
     if (value.length < 8) {
       return "Minimum 8 char";
     }
+    return null;
   }
 }
 
@@ -39,8 +40,8 @@ class _LoginPageState extends State<LoginPage> {
   String _email = "";
   String _password = "";
   String _username = "";
-  TextEditingController _firstPassword = TextEditingController();
-  TextEditingController _secondPassword = TextEditingController();
+  final TextEditingController _firstPassword = TextEditingController();
+  final TextEditingController _secondPassword = TextEditingController();
   Formtype _formType = Formtype.login;
   final formKey = GlobalKey<FormState>();
 
@@ -159,6 +160,7 @@ class _LoginPageState extends State<LoginPage> {
             if (value != _firstPassword.text) {
               return "Passwords Don't Match";
             }
+            return null;
           },
           obscureText: true,
         ),

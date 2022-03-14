@@ -14,7 +14,7 @@ class RootPage extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           final bool isLoggedIn = snapshot.hasData;
-          return isLoggedIn ? VerifyEmailPage() : const LoginPage();
+          return isLoggedIn ? const VerifyEmailPage() : const LoginPage();
         } else {
           return _waitingScreen();
         }

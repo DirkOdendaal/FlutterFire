@@ -173,25 +173,31 @@ class _HomePageState extends State<HomePage> {
                       email: dataEventValues["email"],
                       uid: currentUser,
                       username: dataEventValues["username"]);
-                  return UserAccountsDrawerHeader(
-                    currentAccountPicture: CircleAvatar(
-                      backgroundImage: AssetImage("images/default_user.jpg"),
-                    ),
-                    accountEmail: Text(user.email),
-                    accountName: Text(
-                      user.username,
-                      style: const TextStyle(fontSize: 24.0),
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Colors.blueGrey,
+                  return MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () {
+                        print("Navigate");
+                      },
+                      child: UserAccountsDrawerHeader(
+                        currentAccountPicture: CircleAvatar(
+                          backgroundImage: AssetImage(user.userImage),
+                        ),
+                        accountEmail: Text(user.email),
+                        accountName: Text(
+                          user.username,
+                          style: const TextStyle(fontSize: 24.0),
+                        ),
+                        decoration: const BoxDecoration(
+                          color: Colors.blueGrey,
+                        ),
+                      ),
                     ),
                   );
                 } else {
-                  print("Snapshot has no data");
                   return Container();
                 }
               } else {
-                print("Snapshot has no data");
                 return Container();
               }
           }

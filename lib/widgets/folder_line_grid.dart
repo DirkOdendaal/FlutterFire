@@ -3,7 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class FolderBar extends StatefulWidget {
-  final currentUser;
+  final String currentUser;
   const FolderBar({Key? key, required this.currentUser}) : super(key: key);
 
   @override
@@ -28,6 +28,7 @@ class _FolderBarState extends State<FolderBar> {
               const CircularProgressIndicator();
               break;
             default:
+              final currentFolder = HomePage.of(context)!.getCurrentFolder();
               final snapDataEvent = snapshot.data as Event;
               final dataEventValues = snapDataEvent.snapshot.value;
               if (dataEventValues != null) {
@@ -47,7 +48,11 @@ class _FolderBarState extends State<FolderBar> {
                               mainAxisSpacing: 5),
                       itemBuilder: (context, index) {
                         final folderName = streamList.elementAt(index);
-                        return buildGrid(context, folderName, index);
+                        if (folderName != currentFolder) {
+                          return buildGrid(context, folderName, index, true);
+                        } else {
+                          return buildGrid(context, folderName, index, false);
+                        }
                       }),
                   height: 75,
                 );
@@ -59,13 +64,16 @@ class _FolderBarState extends State<FolderBar> {
         });
   }
 
-  Widget buildGrid(BuildContext context, String foldername, int index) {
+  Widget buildGrid(
+      BuildContext context, String foldername, int index, bool editable) {
     return GridTile(
         child: Container(
       alignment: Alignment.centerLeft,
       child: TextButton.icon(
           onPressed: () {
-            HomePage.of(context)!.setCurrentFolder(foldername);
+            editable
+                ? HomePage.of(context)!.setCurrentFolder(foldername)
+                : null;
           },
           icon: const Icon(Icons.folder_rounded),
           label: Text(foldername)),

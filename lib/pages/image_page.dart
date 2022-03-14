@@ -28,7 +28,7 @@ class ImageNameValidator {
 class _ImagePageState extends State<ImagePage> {
   late List<User> users;
   late String currentUser;
-  String _searchFunctionString = "";
+  // String _searchFunctionString = "";
 
   String _newImageName = "";
   final _formKey = GlobalKey<FormState>();
@@ -121,9 +121,11 @@ class _ImagePageState extends State<ImagePage> {
           child: GestureDetector(
             child: TextFormField(
               decoration: const InputDecoration(
-                  border: UnderlineInputBorder(), hintText: "Search ..."),
+                  border: UnderlineInputBorder(), hintText: "  Search ..."),
               style: const TextStyle(color: Colors.white),
-              onChanged: (value) {},
+              onChanged: (value) {
+                // TODO : Query on value changed
+              },
             ),
           ),
         ),
@@ -169,13 +171,13 @@ class _ImagePageState extends State<ImagePage> {
     }
 
     if (_formType == Formtype.search) {
-      final childNode;
-      if (_searchFunctionString == "") {
-        childNode = database.child('usersList/').onValue;
-      } else {
-        childNode =
-            database.child('usersList/').startAt(_searchFunctionString).onValue;
-      }
+      // final childNode;
+      // if (_searchFunctionString == "") {
+      final childNode = database.child('usersList/').onValue;
+      // } else {
+      //   childNode =
+      //       database.child('usersList/').startAt(_searchFunctionString).onValue;
+      // }
 
       return StreamBuilder<Object>(
           stream: childNode,
@@ -290,12 +292,20 @@ class _ImagePageState extends State<ImagePage> {
     }
   }
 
+  //Only Add user if emailVerified
   Widget buildList(BuildContext context, User user) {
     return ListTile(
-        title: Text(user.email),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            backgroundImage: AssetImage(user.userImage),
+          ),
+        ),
+        title: Text(user.username),
         onTap: () {
           shareFile(user.uid);
-          _displayTextInputDialog(context, 1, "Shared file to ${user.email}");
+          _displayTextInputDialog(
+              context, 1, "Shared file to ${user.username}");
         });
   }
 
