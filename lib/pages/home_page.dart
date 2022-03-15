@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:cloud/classes/auth.dart';
 import 'package:cloud/classes/firebase_api.dart';
+import 'package:cloud/pages/edit_user_page.dart';
 import 'package:cloud/widgets/alert_dialog.dart';
 import 'package:cloud/widgets/folder_line_grid.dart';
 import 'package:cloud/widgets/photos_grid.dart';
@@ -176,9 +177,8 @@ class _HomePageState extends State<HomePage> {
                   return MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
-                      onTap: () {
-                        print("Navigate");
-                      },
+                      onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => EditUser(currenUser: user,))),
                       child: UserAccountsDrawerHeader(
                         currentAccountPicture: CircleAvatar(
                           backgroundImage: AssetImage(user.userImage),

@@ -1,5 +1,5 @@
 import 'package:cloud/classes/auth_provider.dart';
-import 'package:cloud/pages/verify_email.dart';
+import 'package:cloud/classes/verify_email.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud/pages/login_page.dart';
 
